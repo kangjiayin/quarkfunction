@@ -99,28 +99,29 @@ function jacobiBB(i,j)
     end
 end
 Δ=A=fill(1,intstep+1)
-while maximum(Δ)>0.01 
-    map(1:step) do st
-        global A
-        global B
-        global z2
-        global z4
-        global Δ
-        realSumA19=realSumA(intstep+2)
-        z2=(-1+sqrt(1+4realSumA19))/(2*realSumA19)
-        z4=1-z2^2*realSumB(intstep+2)/m
-        FA=[sumFA(i) for i=1:(intstep+1)]
-        FB=[sumFB(i) for i=1:(intstep+1)]
-        jacobiAA_M=[jacobiAA(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
-        jacobiAB_M=[jacobiAB(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
-        jacobiBA_M=[jacobiBA(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
-        jacobiBB_M=[jacobiBB(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
-        jacobi=[[jacobiAA_M jacobiAB_M] ;[jacobiBA_M jacobiBB_M]]
-        Δ=inv(jacobi)*[FA;FB]
-        A-=Δ[1:(intstep+1)]
-        B-=Δ[(intstep+2):(2intstep+2)]
-    end 
-end
+# while maximum(Δ)>0.01 
+#     map(1:step) do st
+#         global A
+#         global B
+#         global z2
+#         global z4
+#         global Δ
+#         realSumA19=realSumA(intstep+2)
+#         z2=(-1+sqrt(1+4realSumA19))/(2*realSumA19)
+#         z4=1-z2^2*realSumB(intstep+2)/m
+#         FA=[sumFA(i) for i=1:(intstep+1)]
+#         FB=[sumFB(i) for i=1:(intstep+1)]
+#         jacobiAA_M=[jacobiAA(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
+#         jacobiAB_M=[jacobiAB(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
+#         jacobiBA_M=[jacobiBA(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
+#         jacobiBB_M=[jacobiBB(i,j) for i=1:(intstep+1),j=1:(intstep+1)]
+#         jacobi=[[jacobiAA_M jacobiAB_M] ;[jacobiBA_M jacobiBB_M]]
+#         Δ=inv(jacobi)*[FA;FB]
+#         A-=Δ[1:(intstep+1)]
+#         B-=Δ[(intstep+2):(2intstep+2)]
+#     end 
+# end
+realSumA19=realSumA(intstep+2)
 
 
 

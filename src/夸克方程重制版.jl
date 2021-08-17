@@ -13,7 +13,7 @@ const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
 step = 5;
-intstep = 2^8;
+intstep = 2^7;
 cutup = 10^4+0.;
 cutdown = 10^(-4);
 
@@ -25,6 +25,7 @@ A=Array{Float64}(undef,intstep,1)
 B=Array{Float64}(undef,intstep,1)
 # 点与权重
 k,w= gausslegendremesh(cutdown,cutup,intstep,2)
+# w=w .*4/3
 # 所需的函数
 stepfunction(x)= x>0
 delta(x,y)= ==(x,y)
@@ -90,29 +91,31 @@ jacobifBB(i,j)=delta(i,j)-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j
 
 A=fill(2,intstep);
 B=fill(2,intstep);
-Δ=Array{Float64}(undef,2*intstep,1)
+Δ=fill(1.,2*intstep)
 st=0
-z2old=0
-z4old=0
-while st<10
-    global A, B, Δ, st, z2, z4, z2old, z4old
-    st+=1
-    k19sumA, k19sumB=renormalpoint()
-    z2old=z2
-    z4old=z4
-    z2=(-1+sqrt(1+4*k19sumA))/(2*k19sumA)
-    z4=(m-z2^2*k19sumB)/m
-    FA=[FAf(i) for i=1:(intstep)]
-    FB=[FBf(i) for i=1:(intstep)]
-    jacobiAA=[jacobifAA(i,j) for i=1:(intstep),j=1:(intstep)]
-    jacobiAB=[jacobifAB(i,j) for i=1:(intstep),j=1:(intstep)]
-    jacobiBA=[jacobifBA(i,j) for i=1:(intstep),j=1:(intstep)]
-    jacobiBB=[jacobifBB(i,j) for i=1:(intstep),j=1:(intstep)]
-    jacobi=[jacobiAA jacobiAB; jacobiBA jacobiBB]
-    Δ=jacobi\[FA; FB]
-    A-=Δ[1:(intstep)]
-    B-=Δ[(intstep+1):(2intstep)]
-end
+z2old=0.
+z4old=0.
+
+k19sumA, k19sumB=renormalpoint()
+# while maximum(Δ)>0.0000000001 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5
+#     global A, B, Δ, st, z2, z4, z2old, z4old
+#     st+=1
+#     k19sumA, k19sumB=renormalpoint()
+#     z2old=z2
+#     z4old=z4
+#     z2=(-1+sqrt(1+4*k19sumA))/(2*k19sumA)
+#     z4=(m-z2^2*k19sumB)/m
+#     FA=[FAf(i) for i=1:(intstep)]
+#     FB=[FBf(i) for i=1:(intstep)]
+#     jacobiAA=[jacobifAA(i,j) for i=1:(intstep),j=1:(intstep)]
+#     jacobiAB=[jacobifAB(i,j) for i=1:(intstep),j=1:(intstep)]
+#     jacobiBA=[jacobifBA(i,j) for i=1:(intstep),j=1:(intstep)]
+#     jacobiBB=[jacobifBB(i,j) for i=1:(intstep),j=1:(intstep)]
+#     jacobi=[jacobiAA jacobiAB; jacobiBA jacobiBB]
+#     Δ=jacobi\[FA; FB]
+#     A-=Δ[1:(intstep)]
+#     B-=Δ[(intstep+1):(2intstep)]
+# end
 
 
 #plot(k,A,scale=:log10,title="A")
