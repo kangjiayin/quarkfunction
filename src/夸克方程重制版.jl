@@ -22,7 +22,7 @@ cutdown = 10^(-4);
 # 分配需要变量的内存
 z1 = 1.::Float64;
 z2 = 1.::Float64;
-z4 = 1.5::Float64;
+z4 = 1.::Float64;
 A=Array{Float64}(undef,intstep,1)
 B=Array{Float64}(undef,intstep,1)
 # 点与权重
@@ -99,7 +99,7 @@ z2old=0.
 z4old=0.
 
 # k19sumA, k19sumB=renormalpoint()
-while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5
+while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5 
     global A, B, Δ, st, z2, z4, z2old, z4old
     st+=1
     k19sumA, k19sumB=renormalpoint()
