@@ -1,7 +1,6 @@
 #Julia
 #2021.08.10
-include("/Users/kjy/Desktop/program/julia/module/GaussQuad/src/gaussQuad.jl")
-include("/Users/kjy/Desktop/program/julia/module/GaussQuad/src/gaussmesh.jl")
+using Gaussquad
 using JLD2
 using Plots
 ###参数列表
@@ -14,10 +13,11 @@ const Nf=4;
 const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
+upper=3
 step = 5;
 intstep = 2^9;
-cutup = 10^4+0.;
-cutdown = 10^(-4);
+cutup = 10. ^upper;
+cutdown = 10. ^(-upper);
 
 # 分配需要变量的内存
 z1 = 1.::Float64;
@@ -91,8 +91,9 @@ jacobifBA(i,j)=-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(-2*A[j]*B[j]*k[j])/(k[j]*A[j]^2+B[
 jacobifBB(i,j)=delta(i,j)-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j]*A[j]^2+B[j]^2)^2*IntB[i,j]
 # 给定a和b初值
 
+
 A=fill(2,intstep);
-B=fill(2,intstep);
+B=fill(1,intstep);
 Δ=fill(1.,2*intstep)
 st=0
 z2old=0.
@@ -119,6 +120,8 @@ while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5
     B-=Δ[(intstep+1):(2intstep)]
 end
 
-# jldsave("/Users/kjy/Desktop/program/julia/Gamma5/data/ABk128.jld2";A, B, k)
+jldsave("../data/ABkpower$upper.jld2";A, B, k)
+
+
 #plot(k,A,scale=:log10,title="A")
 #plot(k,B,scale=:log10,title="B")
