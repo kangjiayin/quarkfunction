@@ -13,7 +13,7 @@ const Nf=4;
 const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
-upper=3
+upper= 6
 step = 5;
 intstep = 2^9;
 cutup = 10. ^upper;
@@ -120,8 +120,10 @@ while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5
     B-=Δ[(intstep+1):(2intstep)]
 end
 
-jldsave("../data/ABkpower$upper.jld2";A, B, k)
-
+jldsave("./data/ABkpower$upper.jld2";A, B, k)
+# A6,B6,k6=load("./data/ABkpower6.jld2","A","B", "k")
+# plot!(k6,A6,scale=:log10)
+# scatter!(k6,A6,scale=:log10)
 
 #plot(k,A,scale=:log10,title="A")
 #plot(k,B,scale=:log10,title="B")
