@@ -13,14 +13,14 @@ const Nf=4;
 const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
-upper= 6
-step = 5;
-intstep = 2^9;
+upper= 5
+# step = 5;
+intstep = 2^8;
 cutup = 10. ^upper;
 cutdown = 10. ^(-upper);
 
 # 分配需要变量的内存
-z1 = 1.::Float64;
+# z1 = 1.::Float64;
 z2 = 1.::Float64;
 z4 = 1.::Float64;
 A=Array{Float64}(undef,intstep,1)
@@ -92,16 +92,16 @@ jacobifBB(i,j)=delta(i,j)-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j
 # 给定a和b初值
 
 
-A=fill(2,intstep);
+A=fill(1.5,intstep);
 B=fill(1,intstep);
 Δ=fill(1.,2*intstep)
-st=0
+st=0::Int
 z2old=0.
 z4old=0.
 
 # k19sumA, k19sumB=renormalpoint()
-while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5 
-    global A, B, Δ, st, z2, z4, z2old, z4old
+while maximum(abs.(Δ))>10^-6 || abs(1- z2/z2old) > 10^-6 || abs(1- z4/z4old) > 10^-6
+    global A, B, Δ, st, z2, z4, z2old, z4old 
     st+=1
     k19sumA, k19sumB=renormalpoint()
     z2old=z2
@@ -120,7 +120,7 @@ while maximum(Δ)>10^-5 && abs(1-z2old/z2)>10^-5 && abs(1-z4old/z4)>10^-5
     B-=Δ[(intstep+1):(2intstep)]
 end
 
-jldsave("./data/ABkpower$upper.jld2";A, B, k)
+# jldsave("/Users/kjy/Desktop/program/julia/Gamma5/data/ABk1024.jld2";A, B, k)
 # A6,B6,k6=load("./data/ABkpower6.jld2","A","B", "k")
 # plot!(k6,A6,scale=:log10)
 # scatter!(k6,A6,scale=:log10)
