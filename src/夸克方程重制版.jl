@@ -13,7 +13,7 @@ const Nf=4;
 const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
-upper= 5
+upper= 7
 # step = 5;
 intstep = 2^8;
 cutup = 10. ^upper;
@@ -39,26 +39,37 @@ D(t)=8*pi^2*(dd*exp(-t/(ω^2))/ω^4+rm*F(t)/log(τ+(1+t/Λ^2)^2));
 # i代表外动量，j代表内动量
 IntA=Array{Float64}(undef,intstep+1,intstep)
 IntB=Array{Float64}(undef,intstep+1,intstep)
+IntBz4=Array{Float64}(undef,intstep)
 Threads.@threads for i= 1:intstep+1
     for j= 1:intstep
+        q2=k[j]
         if i==intstep+1
+            IntBz4[j]=(4/3)*gausschebyshevint64(z->D(19. ^2+q2+19. *sqrt(q2)*z))/(2*pi)^3
             k2=19. ^2
         else
             k2=k[i]
         end
-        q2=k[j]
         kdotq(z)=sqrt(k2*q2)*z
-        IntA[i,j]=(4/3)*gausschebyshevint64(z->D(k2+q2-2*kdotq(z))*(3*k2*kdotq(z)+3*q2*kdotq(z)-2*k2*q2-4*(kdotq(z))^2)/k2/(k2+q2-2*kdotq(z)))
-        IntB[i,j]=(4/3)*gausschebyshevint64(z->D(k2+q2-2*kdotq(z)))
+        IntA[i,j]=(4/3)*gausschebyshevint64(z->D(k2+q2-2*kdotq(z))*(3*k2*kdotq(z)+3*q2*kdotq(z)-2*k2*q2-4*(kdotq(z))^2)/k2/(k2+q2-2*kdotq(z)))/(2*pi)^3
+        IntB[i,j]=(4/3)*gausschebyshevint64(z->(D(k2+q2-2*kdotq(z))-D(19. ^2+q2+19. *sqrt(q2)*z)))/(2*pi)^3
     end
 end
-#########角度积分完结#################### 
+
+#########角度积分完结####################
+
+function getz4()
+    sumB=0.::Float64
+    for j=1:intstep
+        sumB+=3*k[j]*B[j]/(k[j]*A[j]^2+B[j]^2)*IntBz4[j]*w[j]
+    end
+    return sumB
+end 
+
 function FAf(i)
     sum=0.::Float64
     for j=1:intstep
         sum+=k[j]*A[j]/(k[j]*A[j]^2+B[j]^2)*IntA[i,j]*w[j]
     end
-    sum*=1/(2*pi)^3
     result=A[i]-z2-z2^2*sum
     return result
 end
@@ -68,8 +79,7 @@ function FBf(i)
     for j=1:intstep
         sum+=3*k[j]*B[j]/(k[j]*A[j]^2+B[j]^2)*IntB[i,j]*w[j]
     end
-    sum*=1/(2*pi)^3
-    result=B[i]-m*z4-z2^2*sum
+    result=B[i]-m-z2^2*sum
     return result
 end
 
@@ -80,15 +90,13 @@ function renormalpoint()
         sumA+=k[j]*A[j]/(k[j]*A[j]^2+B[j]^2)*IntA[intstep+1,j]*w[j]
         sumB+=3*k[j]*B[j]/(k[j]*A[j]^2+B[j]^2)*IntB[intstep+1,j]*w[j]
     end
-    sumA*=1/(2*pi)^3
-    sumB*=1/(2*pi)^3
     return sumA,sumB
 end
 
-jacobifAA(i,j)=delta(i,j)-z2^2*(2*pi)^(-3)*w[j]*k[j]*(B[j]^2-k[j]*A[j]^2)/(k[j]*A[j]^2+B[j]^2)^2*IntA[i,j]
-jacobifAB(i,j)=-z2^2*(2*pi)^(-3)*w[j]*k[j]*(-2*A[j]*B[j])/(k[j]*A[j]^2+B[j]^2)^2*IntA[i,j]
-jacobifBA(i,j)=-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(-2*A[j]*B[j]*k[j])/(k[j]*A[j]^2+B[j]^2)^2*IntB[i,j]
-jacobifBB(i,j)=delta(i,j)-3*z2^2*(2*pi)^(-3)*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j]*A[j]^2+B[j]^2)^2*IntB[i,j]
+jacobifAA(i,j)=delta(i,j)-z2^2*w[j]*k[j]*(B[j]^2-k[j]*A[j]^2)/(k[j]*A[j]^2+B[j]^2)^2*IntA[i,j]
+jacobifAB(i,j)=-z2^2*w[j]*k[j]*(-2*A[j]*B[j])/(k[j]*A[j]^2+B[j]^2)^2*IntA[i,j]
+jacobifBA(i,j)=-3*z2^2*w[j]*k[j]*(-2*A[j]*B[j]*k[j])/(k[j]*A[j]^2+B[j]^2)^2*IntB[i,j]
+jacobifBB(i,j)=delta(i,j)-3*z2^2*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j]*A[j]^2+B[j]^2)^2*IntB[i,j]
 # 给定a和b初值
 
 
@@ -97,17 +105,15 @@ B=fill(1,intstep);
 Δ=fill(1.,2*intstep)
 st=0::Int
 z2old=0.
-z4old=0.
+# z4old=0.
 
 # k19sumA, k19sumB=renormalpoint()
-while maximum(abs.(Δ))>10^-6 || abs(1- z2/z2old) > 10^-6 || abs(1- z4/z4old) > 10^-6
-    global A, B, Δ, st, z2, z4, z2old, z4old 
+while maximum(abs.(Δ))>10^-6 || abs(1- z2/z2old) > 10^-6 
+    global A, B, Δ, st, z2, z4, z2old#, z4old 
     st+=1
     k19sumA, k19sumB=renormalpoint()
     z2old=z2
-    z4old=z4
     z2=(-1+sqrt(1+4*k19sumA))/(2*k19sumA)
-    z4=(m-z2^2*k19sumB)/m
     FA=[FAf(i) for i=1:(intstep)]
     FB=[FBf(i) for i=1:(intstep)]
     jacobiAA=[jacobifAA(i,j) for i=1:(intstep),j=1:(intstep)]
@@ -120,10 +126,13 @@ while maximum(abs.(Δ))>10^-6 || abs(1- z2/z2old) > 10^-6 || abs(1- z4/z4old) > 
     B-=Δ[(intstep+1):(2intstep)]
 end
 
-# jldsave("/Users/kjy/Desktop/program/julia/Gamma5/data/ABk1024.jld2";A, B, k)
-# A6,B6,k6=load("./data/ABkpower6.jld2","A","B", "k")
+# jldsave("/Users/kjy/Desktop/program/julia/Gamma5/data/ABk$upper.jld2";A, B, k)
+# A4,B4,k4=load("./data/ABk4.jld2","A","B", "k")
 # plot!(k6,A6,scale=:log10)
 # scatter!(k6,A6,scale=:log10)
+# plot(k,A,scale=:log10,title="A")
+# plot(k,B,scale=:log10,title="B")
 
-#plot(k,A,scale=:log10,title="A")
-#plot(k,B,scale=:log10,title="B")
+
+
+z4=(m-z2^2*getz4())/m
