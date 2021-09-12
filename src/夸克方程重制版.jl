@@ -13,9 +13,9 @@ const Nf=4;
 const rm=12/(33 - 2*Nf);
 const m = 0.003;
 
-upper= 7
+upper= 4
 # step = 5;
-intstep = 2^8;
+intstep = 2^12;
 cutup = 10. ^upper;
 cutdown = 10. ^(-upper);
 
@@ -132,7 +132,5 @@ end
 # scatter!(k6,A6,scale=:log10)
 # plot(k,A,scale=:log10,title="A")
 # plot(k,B,scale=:log10,title="B")
-
-
 
 z4=(m-z2^2*getz4())/m
