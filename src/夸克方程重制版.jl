@@ -15,7 +15,7 @@ const m = 0.003;
 
 upper= 4
 # step = 5;
-intstep = 2^12;
+intstep = 2^10;
 cutup = 10. ^upper;
 cutdown = 10. ^(-upper);
 
