@@ -4,18 +4,18 @@ using Gaussquad
 using JLD2
 using Plots
 ###参数列表
-const mt=0.5;
-const τ=ℯ^2-1;
-const Λ=0.234;
-const ω=0.5;
-const dd=(0.82)^3/ω;
-const Nf=4;
-const rm=12/(33 - 2*Nf);
+const mt = 0.5;
+const τ = ℯ^2-1;
+const Λ = 0.234;
+const ω = 0.5;
+const dd = (0.82)^3/ω;
+const Nf = 4;
+const rm = 12/(33 - 2*Nf);
 const m = 0.003;
 
-upper= 4
+upper = 4
 # step = 5;
-intstep = 2^10;
+intstep = 2^8;
 cutup = 10. ^upper;
 cutdown = 10. ^(-upper);
 
@@ -23,15 +23,16 @@ cutdown = 10. ^(-upper);
 # z1 = 1.::Float64;
 z2 = 1.::Float64;
 z4 = 1.::Float64;
-A=Array{Float64}(undef,intstep,1)
-B=Array{Float64}(undef,intstep,1)
+A = Array{Float64}(undef,intstep,1)
+B = Array{Float64}(undef,intstep,1)
 # 点与权重
-k,w= gausslegendremesh(cutdown,cutup,intstep,2)
+k,w = gausslegendremesh(cutdown,cutup,intstep,2)
 # w=w .*4/3
 # 所需的函数
-stepfunction(x)= x>0
+stepfunction(x)=x>0
 delta(x,y)= ==(x,y)
 F(x)=(1-exp(-x/(4*mt)^2))/x;
+# 这里考虑下ω的几次方，这里取4
 D(t)=8*pi^2*(dd*exp(-t/(ω^2))/ω^4+rm*F(t)/log(τ+(1+t/Λ^2)^2));
 
 # 先做角度积分
@@ -41,7 +42,7 @@ IntA=Array{Float64}(undef,intstep+1,intstep)
 IntB=Array{Float64}(undef,intstep+1,intstep)
 IntBz4=Array{Float64}(undef,intstep)
 Threads.@threads for i= 1:intstep+1
-    for j= 1:intstep
+    for j = 1:intstep
         q2=k[j]
         if i==intstep+1
             IntBz4[j]=(4/3)*gausschebyshevint64(z->D(19. ^2+q2+19. *sqrt(q2)*z))/(2*pi)^3
@@ -54,7 +55,6 @@ Threads.@threads for i= 1:intstep+1
         IntB[i,j]=(4/3)*gausschebyshevint64(z->(D(k2+q2-2*kdotq(z))-D(19. ^2+q2+19. *sqrt(q2)*z)))/(2*pi)^3
     end
 end
-
 #########角度积分完结####################
 
 function getz4()
@@ -100,8 +100,8 @@ jacobifBB(i,j)=delta(i,j)-3*z2^2*w[j]*k[j]*(k[j]*A[j]^2-B[j]^2)/(k[j]*A[j]^2+B[j
 # 给定a和b初值
 
 
-A=fill(1.5,intstep);
-B=fill(1,intstep);
+A=fill(1.4,intstep);
+B=fill(1.,intstep);
 Δ=fill(1.,2*intstep)
 st=0::Int
 z2old=0.
