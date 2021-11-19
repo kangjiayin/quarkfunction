@@ -15,7 +15,7 @@ const m = 0.003;
 
 upper = 4
 # step = 5;
-intstep = 2^8;
+intstep = 2^5;
 cutup = 10. ^upper;
 cutdown = 10. ^(-upper);
 
@@ -45,14 +45,14 @@ Threads.@threads for i= 1:intstep+1
     for j = 1:intstep
         q2=k[j]
         if i==intstep+1
-            IntBz4[j]=(4/3)*gausschebyshevint64(z->D(19. ^2+q2+19. *sqrt(q2)*z))/(2*pi)^3
+            IntBz4[j]=(4/3)*gausschebyshevint512(z->D(19. ^2+q2+19. *sqrt(q2)*z))/(2*pi)^3
             k2=19. ^2
         else
             k2=k[i]
         end
         kdotq(z)=sqrt(k2*q2)*z
-        IntA[i,j]=(4/3)*gausschebyshevint64(z->D(k2+q2-2*kdotq(z))*(3*k2*kdotq(z)+3*q2*kdotq(z)-2*k2*q2-4*(kdotq(z))^2)/k2/(k2+q2-2*kdotq(z)))/(2*pi)^3
-        IntB[i,j]=(4/3)*gausschebyshevint64(z->(D(k2+q2-2*kdotq(z))-D(19. ^2+q2+19. *sqrt(q2)*z)))/(2*pi)^3
+        IntA[i,j]=(4/3)*gausschebyshevint512(z->D(k2+q2-2*kdotq(z))*(3*k2*kdotq(z)+3*q2*kdotq(z)-2*k2*q2-4*(kdotq(z))^2)/k2/(k2+q2-2*kdotq(z)))/(2*pi)^3
+        IntB[i,j]=(4/3)*gausschebyshevint512(z->(D(k2+q2-2*kdotq(z))-D(19. ^2+q2+19. *sqrt(q2)*z)))/(2*pi)^3
     end
 end
 #########角度积分完结####################
@@ -108,8 +108,9 @@ z2old=0.
 # z4old=0.
 
 # k19sumA, k19sumB=renormalpoint()
-while maximum(abs.(Δ))>10^-6 || abs(1- z2/z2old) > 10^-6 
-    global A, B, Δ, st, z2, z4, z2old#, z4old 
+while maximum(abs.(Δ))>10^-12 || abs(1- z2/z2old) > 10^-12 # || z2^2*k19sumB>10^-4
+# while st<1
+    global A, B, Δ, st, z2, z4, z2old, FA, FB, k19sumB
     st+=1
     k19sumA, k19sumB=renormalpoint()
     z2old=z2
